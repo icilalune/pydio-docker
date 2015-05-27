@@ -1,0 +1,18 @@
+web:
+  build: .
+  ports:
+    - 3021:80
+  volumes:
+    - ./_fig/data/pydio:/app/data
+  links:
+    - mysql:mysql
+
+mysql:
+  image: mysql:5.6
+  environment:
+    MYSQL_ROOT_PASSWORD: qfsdf8s1f89s9
+    MYSQL_USER: pydio
+    MYSQL_PASSWORD: qfsdf8s1f89s9
+    MYSQL_DATABASE: pydio
+  volumes:
+    - ./_fig/data/mysql:/var/lib/mysql
