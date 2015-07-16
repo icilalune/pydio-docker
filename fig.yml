@@ -3,7 +3,7 @@ web:
   ports:
     - 3021:80
   volumes:
-    - ./_fig/data/pydio:/app/data
+    - ./_fig/data/pydio:/var/www/html/data
   links:
     - mysql:mysql
 

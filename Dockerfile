@@ -1,22 +1,63 @@
-FROM tutum/apache-php
+FROM php:5.5-apache
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV LANG C.UTF-8
 
-RUN apt-get update && apt-get install php5-mcrypt php5-imagick wget -y
+RUN apt-get update && apt-get install -y \
+        git \
+        imagemagick \
+        libcurl4-openssl-dev \
+        libfreetype6-dev \
+        libjpeg-turbo-progs \
+        libjpeg62-turbo-dev \
+        libmcrypt-dev \
+        libpng12-dev \
+        mysql-client \
+        pngquant \
+        ssmtp \
+        sudo \
+        unzip \
+        wget \
+        zlib1g-dev \
+    && docker-php-ext-install \
+        curl \
+        exif \
+        mbstring \
+        mcrypt \
+        mysql \
+        mysqli \
+        pcntl \
+        pdo_mysql \
+        zip \
+    && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
+    && docker-php-ext-install gd
 
-RUN php5enmod mcrypt
+RUN rm /usr/local/etc/php/conf.d/docker-php-ext-curl.ini
 
-RUN sed -i "s/output_buffering = 4096/output_buffering = Off/g" /etc/php5/apache2/php.ini
-RUN sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 1024M/g" /etc/php5/apache2/php.ini
-RUN sed -i "s/post_max_size = 8M/post_max_size = 1024M/g" /etc/php5/apache2/php.ini
-RUN sed -i "s/<\/VirtualHost>/<Directory \/var\/www\/html>\nAllowOverride All\n<\/Directory>\n<\/VirtualHost>/g" /etc/apache2/sites-enabled/000-default.conf
+RUN pecl install \
+        imagick \
+    && echo "extension=imagick.so" > /usr/local/etc/php/conf.d/pecl-imagick.ini
 
-RUN cd /tmp\
- && wget http://heanet.dl.sourceforge.net/project/ajaxplorer/pydio/stable-channel/6.0.7/pydio-core-6.0.7.tar.gz\
- && tar xzf pydio-core-6.0.7.tar.gz\
- && rm -rf /app\
- && mv pydio-core-6.0.7 /app
+RUN echo "output_buffering = Off" >> /usr/local/etc/php/conf.d/conf-output.ini \
+ && echo "upload_max_filesize = 2048M" >> /usr/local/etc/php/conf.d/conf-upload.ini \
+ && echo "post_max_size = 2048M" >> /usr/local/etc/php/conf.d/conf-upload.ini \
+ && echo "session.save_path = /tmp" >> /usr/local/etc/php/conf.d/conf-session.ini
 
-VOLUME /app/data
+RUN cd /tmp \
+ && wget http://heanet.dl.sourceforge.net/project/ajaxplorer/pydio/stable-channel/6.0.8/pydio-core-6.0.8.tar.gz \
+ && tar xzf pydio-core-6.0.8.tar.gz \
+ && rm -rf /var/www/html \
+ && mv pydio-core-6.0.8 /var/www/html \
+ && cp -rp /var/www/html/data /var/www/pydio-stub-data
 
+ADD ./install-stub-data.sh /var/www/
+
+VOLUME /var/www/html/data
+
+RUN apt-get clean
+
+RUN a2enmod deflate \
+    && a2enmod expires \
+    && a2enmod headers \
+    && a2enmod mime \
+    && a2enmod rewrite
