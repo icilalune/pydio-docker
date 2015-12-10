@@ -44,10 +44,10 @@ RUN echo "output_buffering = Off" >> /usr/local/etc/php/conf.d/conf-output.ini \
  && echo "session.save_path = /tmp" >> /usr/local/etc/php/conf.d/conf-session.ini
 
 RUN cd /tmp \
- && wget http://heanet.dl.sourceforge.net/project/ajaxplorer/pydio/stable-channel/6.0.8/pydio-core-6.0.8.tar.gz \
- && tar xzf pydio-core-6.0.8.tar.gz \
+ && wget http://heanet.dl.sourceforge.net/project/ajaxplorer/pydio/stable-channel/6.2.1/pydio-core-6.2.1.tar.gz \
+ && tar xzf pydio-core-6.2.1.tar.gz \
  && rm -rf /var/www/html \
- && mv pydio-core-6.0.8 /var/www/html \
+ && mv pydio-core-6.2.1 /var/www/html \
  && cp -rp /var/www/html/data /var/www/pydio-stub-data
 
 ADD ./install-stub-data.sh /var/www/
