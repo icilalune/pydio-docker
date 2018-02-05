@@ -29,19 +29,19 @@ RUN apt-get update && apt-get install -y \
 	&& rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man /tmp/*
 
 RUN pecl install \
-	APCu-5.1.8 \
-	imagick-3.4.3
+		APCu-5.1.8 \
+		imagick-3.4.3
 
 RUN docker-php-ext-install \
-	exif \
-	intl \
-	gd \
-	json \
-	mcrypt \
-	mysqli \
-	pgsql \
-	opcache \
-	xml \
+		exif \
+		intl \
+		gd \
+		json \
+		mbstring \
+		mysqli \
+		pgsql \
+		opcache \
+		xml \
     && docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr --with-freetype-dir=/usr/include/ \
     && docker-php-ext-enable \
     	apcu \
