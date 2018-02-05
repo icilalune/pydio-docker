@@ -5,6 +5,7 @@ ENV PYDIO_VERSION 8.0.2
 RUN apt-get update && apt-get install -y \
 		fontconfig-config \
 		fonts-dejavu-core \
+		imagemagick \
 		libcurl4-openssl-dev \
 		libfreetype6-dev \
 		libicu-dev \
