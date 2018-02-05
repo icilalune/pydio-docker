@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
 		libjpeg62-turbo-dev \
         libmcrypt-dev \
         libmagickwand-6-headers \
-		libpng12-dev \
+		libpng-dev \
 		libpq-dev \
 		libxml2-dev \
         mysql-client \
