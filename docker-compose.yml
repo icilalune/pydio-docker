@@ -1,18 +1,23 @@
-web:
-  build: .
-  ports:
-    - 3021:80
-  volumes:
-    - ./_fig/data/pydio:/var/www/html/data
-  links:
-    - mysql:mysql
-
-mysql:
-  image: mysql:5.7
-  environment:
-    MYSQL_ROOT_PASSWORD: qfsdf8s1f89s9
-    MYSQL_USER: pydio
-    MYSQL_PASSWORD: qfsdf8s1f89s9
-    MYSQL_DATABASE: pydio
-  volumes:
-    - ./_fig/data/mysql:/var/lib/mysql
+version: "2"
+services:
+  web:
+    build: .
+    environment:
+      PYDIO_MYSQL_USER: pydio
+      PYDIO_MYSQL_PASSWORD: pydio
+      PYDIO_MYSQL_DATABASE: pydio
+      PYDIO_MYSQL_HOST: mysql
+    labels:
+      - traefik.frontend.rule=Host:pydio.docker
+    volumes:
+      - ./var/data/pydio/run:/var/run/pydio
+      - ./var/data/pydio/lib:/var/lib/pydio
+  mysql:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: pydio
+      MYSQL_USER: pydio
+      MYSQL_PASSWORD: pydio
+      MYSQL_DATABASE: pydio
+    volumes:
+      - ./var/data/mysql:/var/lib/mysql

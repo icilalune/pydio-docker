@@ -1,70 +1,81 @@
 FROM php:7-apache
 
-ENV DEBIAN_FRONTEND noninteractive
-ENV LANG C.UTF-8
+ENV PYDIO_VERSION 8.0.2
 
 RUN apt-get update && apt-get install -y \
-        git \
-        graphicsmagick-imagemagick-compat \
-        graphicsmagick-libmagick-dev-compat \
-        libcurl4-openssl-dev \
-        libfreetype6-dev \
-        libjpeg-turbo-progs \
-        libjpeg62-turbo-dev \
+		fontconfig-config \
+		fonts-dejavu-core \
+		libcurl4-openssl-dev \
+		libfreetype6-dev \
+		libicu-dev \
+		libjpeg-dev \
+		libgd-tools \
+		libmagick++-dev \
+		libjpeg-turbo-progs \
+		libjpeg62-turbo-dev \
         libmcrypt-dev \
-        libmemcached-dev \
-        libpng12-dev \
-        libxml2-dev \
+        libmagickwand-6-headers \
+		libpng12-dev \
+		libpq-dev \
+		libxml2-dev \
         mysql-client \
-        pngquant \
-        ssmtp \
-        sudo \
-        unzip \
-        wget \
-        zlib1g-dev \
-    && docker-php-ext-install \
-        bcmath \
-        curl \
-        exif \
-        intl \
-        mbstring \
-        mcrypt \
-        mysqli \
-        opcache \
-        pcntl \
-        pdo_mysql \
-        soap \
-        zip \
+		pngquant \
+		ssmtp \
+		sudo \
+		unzip \
+		wget \
+		zlib1g-dev \
     && apt-get clean && apt-get autoremove -q \
-    && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man /tmp/* \
-    && a2enmod deflate expires headers mime rewrite \
-    && echo "<Directory /var/www/html>\nAllowOverride All\n</Directory>" > /etc/apache2/conf-enabled/allowoverride.conf \
-    && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
-    && docker-php-ext-install gd \
-    && git clone https://github.com/php-memcached-dev/php-memcached /usr/src/php/ext/memcached \
-    && cd /usr/src/php/ext/memcached && git checkout 6ace07da69a5ebc021e56a9d2f52cdc8897b4f23 \
-    && docker-php-ext-configure memcached \
-    && docker-php-ext-install memcached \
-    && echo "sendmail_path = /usr/sbin/ssmtp -t" > /usr/local/etc/php/conf.d/conf-sendmail.ini \
-    && echo "date.timezone='Europe/Paris'\n" > /usr/local/etc/php/conf.d/conf-date.ini
+	&& rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man /tmp/*
 
-COPY bin/docker-php-pecl-install /usr/local/bin/
+RUN pecl install \
+	APCu-5.1.8 \
+	imagick-3.4.3
 
-RUN docker-php-pecl-install imagick
+RUN docker-php-ext-install \
+	exif \
+	intl \
+	gd \
+	json \
+	mcrypt \
+	mysqli \
+	pgsql \
+	opcache \
+	xml \
+    && docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr --with-freetype-dir=/usr/include/ \
+    && docker-php-ext-enable \
+    	apcu \
+    	imagick
 
-RUN echo "output_buffering = Off" >> /usr/local/etc/php/conf.d/conf-output.ini \
- && echo "upload_max_filesize = 2048M" >> /usr/local/etc/php/conf.d/conf-upload.ini \
- && echo "post_max_size = 2048M" >> /usr/local/etc/php/conf.d/conf-upload.ini \
- && echo "memory_limit=512M" >> /usr/local/etc/php/conf.d/conf-memory.ini \
- && echo "session.save_path = /tmp" >> /usr/local/etc/php/conf.d/conf-session.ini
+RUN { \
+		echo 'output_buffering=Off'; \
+		echo 'upload_max_filesize=2G'; \
+		echo 'post_max_size=2G'; \
+		echo 'memory_limit=512M'; \
+		echo 'session.save_path=/var/run/pydio'; \
+		echo 'cgi.fix_pathinfo=0'; \
+		echo 'opcache.enable_cli=1'; \
+} > /usr/local/etc/php/conf.d/pydio.ini
 
-COPY ./bin/install-stub-data.sh /var/www/
+RUN mkdir -p /var/run/pydio /var/lib/pydio /etc/pydio \
+	&& chown www-data:www-data /var/run/pydio \
+	&& chown www-data:www-data /var/lib/pydio \
+	&& chown www-data:www-data /etc/pydio
 
-RUN cd /tmp \
- && wget https://download.pydio.com/pub/core/archives/pydio-core-7.0.0.tar.gz \
- && tar xzf pydio-core-7.0.0.tar.gz \
- && rm -rf /var/www/html \
- && mv pydio-core-7.0.0 /var/www/html \
- && cp -rp /var/www/html/data /var/www/pydio-stub-data
+RUN curl -fsSL -o pydio-core.tar.gz https://download.pydio.com/pub/core/archives/pydio-core-${PYDIO_VERSION}.tar.gz \
+    && tar -xzf pydio-core.tar.gz -C /usr/share \
+    && mv /usr/share/pydio-core-${PYDIO_VERSION} /usr/share/pydio \
+	&& mv /usr/share/pydio/data /var/lib/pydio/data \
+	&& mv /usr/share/pydio/conf /etc/pydio/conf \
+	&& chown -R www-data:www-data /var/lib/pydio/data \
+	&& sed -i -e 's!.*define("AJXP_CONF_PATH".*!define("AJXP_CONF_PATH", "/etc/pydio/conf");!g' /usr/share/pydio/base.conf.php \
+	&& sed -i -e 's!.*define("AJXP_DATA_PATH".*!define("AJXP_DATA_PATH", "/var/lib/pydio/data");!g' /etc/pydio/conf/bootstrap_context.php
 
-VOLUME /var/www/html/data
+VOLUME /var/run/pydio
+VOLUME /var/lib/pydio
+
+COPY httpd.conf /etc/pydio/httpd.conf
+RUN ln -s /etc/pydio/httpd.conf /etc/apache2/sites-available/pydio.conf \
+	&& a2enmod expires headers mime rewrite \
+	&& a2dissite 000-default \
+	&& a2ensite pydio
