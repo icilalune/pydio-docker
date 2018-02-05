@@ -1,4 +1,4 @@
-FROM php:7.1-apache
+FROM php:7.0-apache
 
 ENV PYDIO_VERSION 8.0.2
 
