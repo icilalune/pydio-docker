@@ -32,17 +32,17 @@ RUN pecl install \
 		APCu-5.1.8 \
 		imagick-3.4.3
 
-RUN docker-php-ext-install \
+RUN docker-php-ext-install -j$(nproc) \
 		exif \
 		intl \
-		gd \
 		json \
 		mbstring \
 		mysqli \
 		pgsql \
 		opcache \
 		xml \
-    && docker-php-ext-configure gd --with-png-dir=/usr --with-jpeg-dir=/usr --with-freetype-dir=/usr/include/ \
+    && docker-php-ext-configure gd --with-png-dir=/usr/include --with-jpeg-dir=/usr/include --with-freetype-dir=/usr/include \
+    && docker-php-ext-install -j$(nproc) gd \
     && docker-php-ext-enable \
     	apcu \
     	imagick
