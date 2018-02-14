@@ -42,8 +42,8 @@ RUN docker-php-ext-install -j$(nproc) \
 		pgsql \
 		opcache \
 		xml \
-    && docker-php-ext-configure gd --with-png-dir=/usr/include --with-jpeg-dir=/usr/include --with-freetype-dir=/usr/include \
-    && docker-php-ext-install -j$(nproc) gd \
+    && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
+    && docker-php-ext-install gd \
     && docker-php-ext-enable \
     	apcu \
     	imagick
@@ -70,7 +70,8 @@ RUN curl -fsSL -o pydio-core.tar.gz https://download.pydio.com/pub/core/archives
 	&& mv /usr/share/pydio/conf /etc/pydio/conf \
 	&& chown -R www-data:www-data /var/lib/pydio/data \
 	&& sed -i -e 's!.*define("AJXP_CONF_PATH".*!define("AJXP_CONF_PATH", "/etc/pydio/conf");!g' /usr/share/pydio/base.conf.php \
-	&& sed -i -e 's!.*define("AJXP_DATA_PATH".*!define("AJXP_DATA_PATH", "/var/lib/pydio/data");!g' /etc/pydio/conf/bootstrap_context.php
+	&& sed -i -e 's!.*define("AJXP_DATA_PATH".*!define("AJXP_DATA_PATH", "/var/lib/pydio/data");!g' /etc/pydio/conf/bootstrap_context.php \
+	&& sed -i -e 's!.*define("AJXP_SHARED_CACHE_DIR".*!define("AJXP_SHARED_CACHE_DIR", "/var/lib/pydio/data/cache");!g' /etc/pydio/conf/bootstrap_context.php
 
 VOLUME /var/run/pydio
 VOLUME /var/lib/pydio
