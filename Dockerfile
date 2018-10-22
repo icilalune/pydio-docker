@@ -1,6 +1,6 @@
 FROM php:7.0-apache
 
-ENV PYDIO_VERSION 8.0.2
+ENV PYDIO_VERSION 8.2.2
 
 RUN apt-get update && apt-get install -y \
 		fontconfig-config \
