@@ -1,4 +1,4 @@
-FROM php:7.2-apache
+FROM php:7.3-apache-stretch
 
 ENV PYDIO_VERSION 8.2.3
 
@@ -30,8 +30,8 @@ RUN apt-get update && apt-get install -y \
 	&& rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man /tmp/*
 
 RUN pecl install \
-		APCu-5.1.8 \
-		imagick-3.4.3
+		APCu-5.1.17 \
+		imagick-3.4.4
 
 RUN docker-php-ext-install -j$(nproc) \
 		exif \
