@@ -71,7 +71,8 @@ RUN curl -fsSL -o pydio-core.tar.gz https://download.pydio.com/pub/core/archives
 	&& chown -R www-data:www-data /var/lib/pydio/data \
 	&& sed -i -e 's!.*define("AJXP_CONF_PATH".*!define("AJXP_CONF_PATH", "/etc/pydio/conf");!g' /usr/share/pydio/base.conf.php \
 	&& sed -i -e 's!.*define("AJXP_DATA_PATH".*!define("AJXP_DATA_PATH", "/var/lib/pydio/data");!g' /etc/pydio/conf/bootstrap_context.php \
-	&& sed -i -e 's!.*define("AJXP_SHARED_CACHE_DIR".*!define("AJXP_SHARED_CACHE_DIR", "/var/lib/pydio/data/cache");!g' /etc/pydio/conf/bootstrap_context.php
+	&& sed -i -e 's!.*define("AJXP_SHARED_CACHE_DIR".*!define("AJXP_SHARED_CACHE_DIR", "/var/lib/pydio/data/cache");!g' /etc/pydio/conf/bootstrap_context.php \
+	&& mkdir -p /opt/local/bin && ln -s /usr/bin/convert /opt/local/bin/convert
 
 VOLUME /var/run/pydio
 VOLUME /var/lib/pydio
